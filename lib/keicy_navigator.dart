@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KeicyNavigator {
-  static SharedPreferences _prefs;
   static Future push(BuildContext context, String routeName, Widget page) async {
     return await Navigator.of(context).push(KeicyRoute(routeName, page));
   }
@@ -12,13 +11,22 @@ class KeicyNavigator {
   static Future pushReplacement(BuildContext context, String routeName, Widget page) async {
     return await Navigator.of(context).pushReplacement(KeicyRoute(routeName, page));
   }
+}
 
-  static Future<void> pop(BuildContext context, String routeName, {dynamic result}) async {
+class KeicyNavigatorObserver extends NavigatorObserver {
+  static SharedPreferences _prefs;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic> previousRoute) {}
+
+  @override
+  void didPop(Route route, Route previousRoute) async {
     if (_prefs == null) {
       _prefs = await SharedPreferences.getInstance();
     }
-    await _prefs.setInt("Route Name: $routeName", DateTime.now().millisecondsSinceEpoch);
-    return Navigator.of(context).pop(result);
+    await _prefs.setInt("Route Name: ${previousRoute.settings.name}", DateTime.now().millisecondsSinceEpoch);
+
+    super.didPop(route, previousRoute);
   }
 }
 
